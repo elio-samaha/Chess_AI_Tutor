@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "AI Chess Tutor Sync",
+  "version": "0.1.0",
+  "description": "Capture completed Chess.com games and import them into the local AI Chess Tutor app.",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": [
+    "https://www.chess.com/*",
+    "http://127.0.0.1:8000/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_title": "Sync current Chess.com game"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.chess.com/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
