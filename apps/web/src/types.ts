@@ -77,3 +77,14 @@ export interface QuestionAnswer {
   citations: number[];
   suggested_lines: string[];
 }
+
+
+export interface CoachingLayers {
+  game_id: string;
+  ply?: number | null;
+  high_level: string;
+  mid_level: string;
+  move_level: string;
+  engine_line: string[];
+  grounding_note: string;
+}

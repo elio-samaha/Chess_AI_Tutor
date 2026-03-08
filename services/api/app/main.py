@@ -11,7 +11,7 @@ from .analysis import AnalysisService
 from .bots import BotService
 from .chesscom import ChessComService
 from .config import get_settings
-from .llm import ExplanationService
+from .llm import ExplanationService, LlmRouter
 from .models import (
     AnalysisJob,
     AnalysisRequest,
@@ -26,6 +26,7 @@ from .models import (
     MoveAnalysis,
     QuestionAnswer,
     QuestionRequest,
+    CoachingLayers,
 )
 from .sample_data import ensure_sample_game
 from .storage import Database
@@ -36,11 +37,19 @@ database = Database(settings.database_path)
 analysis_service = AnalysisService(settings.stockfish_path)
 bot_service = BotService(analysis_service)
 chesscom_service = ChessComService()
-explanation_service = ExplanationService(
-    analysis_service,
-    base_url=settings.ollama_base_url,
-    model=settings.ollama_model,
+llm_router = LlmRouter(
+    summary_provider=settings.llm_summary_provider,
+    summary_model=settings.llm_summary_model,
+    summary_api_key=settings.llm_summary_api_key,
+    move_provider=settings.llm_move_provider,
+    move_model=settings.llm_move_model,
+    move_api_key=settings.llm_move_api_key,
+    chat_provider=settings.llm_chat_provider,
+    chat_model=settings.llm_chat_model,
+    chat_api_key=settings.llm_chat_api_key,
+    ollama_base_url=settings.ollama_base_url,
 )
+explanation_service = ExplanationService(analysis_service, llm_router)
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(
@@ -185,6 +194,15 @@ def get_analysis_job(job_id: str) -> AnalysisJob:
     if job is None:
         raise HTTPException(status_code=404, detail="Analysis job not found")
     return job
+
+
+@app.post("/games/{game_id}/coaching", response_model=CoachingLayers)
+async def coaching_layers(game_id: str, ply: int | None = None) -> CoachingLayers:
+    game = database.get_game(game_id)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+    analyses = database.list_move_analyses(game_id)
+    return await explanation_service.build_coaching_layers(game_id, analyses, ply)
 
 
 @app.post("/games/{game_id}/questions", response_model=QuestionAnswer)
