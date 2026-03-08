@@ -93,19 +93,35 @@ export default function App() {
   useEffect(() => {
     if (!selectedGameId) {
       setCoaching(null);
+      setCoachingLoading(false);
       return;
     }
+
+    let cancelled = false;
+
     setCoachingLoading(true);
     void (async () => {
       try {
         const layered = await getCoachingLayers(selectedGameId, selectedPly ?? undefined);
+        if (cancelled) {
+          return;
+        }
         setCoaching(layered);
       } catch (error) {
+        if (cancelled) {
+          return;
+        }
         setStatus(error instanceof Error ? error.message : "Failed to generate coaching layers.");
       } finally {
-        setCoachingLoading(false);
+        if (!cancelled) {
+          setCoachingLoading(false);
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedGameId, selectedPly]);
 
   const evalPercent = useMemo(() => clampEval(selectedMove?.eval_after ?? 0), [selectedMove]);
