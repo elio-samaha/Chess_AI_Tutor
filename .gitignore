@@ -3,16 +3,21 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+*.egg-info/
+build/
 
 # Node
 node_modules/
 dist/
 coverage/
+*.tsbuildinfo
 
 # Local data
 data/
 *.sqlite3
 *.db
+*.log
+*.pid
 
 # OS
 .DS_Store
