@@ -136,6 +136,16 @@ class QuestionAnswer(BaseModel):
     suggested_lines: List[str] = Field(default_factory=list)
 
 
+class CoachingLayers(BaseModel):
+    game_id: str
+    ply: Optional[int] = None
+    high_level: str
+    mid_level: str
+    move_level: str
+    engine_line: List[str] = Field(default_factory=list)
+    grounding_note: str
+
+
 class BotGameCreateRequest(BaseModel):
     bot_elo: int = Field(ge=800, le=2200)
     player_color: Literal["white", "black"] = "white"

@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 
 import Board from "./components/Board";
 import ExplanationPanel from "./components/ExplanationPanel";
+import CoachingPanel from "./components/CoachingPanel";
 import GameList from "./components/GameList";
 import MoveList from "./components/MoveList";
 import QaPanel from "./components/QaPanel";
-import { askQuestion, getGame, getMove, importChessComArchive, importPgn, listGames, runAnalysis } from "./lib/api";
-import type { GameDetail, GameSummary, MoveAnalysis, QuestionAnswer } from "./types";
+import { askQuestion, getCoachingLayers, getGame, getMove, importChessComArchive, importPgn, listGames, runAnalysis } from "./lib/api";
+import type { CoachingLayers, GameDetail, GameSummary, MoveAnalysis, QuestionAnswer } from "./types";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -34,6 +35,8 @@ export default function App() {
   const [candidateMove, setCandidateMove] = useState("");
   const [answer, setAnswer] = useState<QuestionAnswer | null>(null);
   const [asking, setAsking] = useState(false);
+  const [coaching, setCoaching] = useState<CoachingLayers | null>(null);
+  const [coachingLoading, setCoachingLoading] = useState(false);
 
   async function refreshGames(nextSelectedId?: string): Promise<void> {
     try {
@@ -85,6 +88,40 @@ export default function App() {
         setStatus(error instanceof Error ? error.message : "Failed to load move.");
       }
     })();
+  }, [selectedGameId, selectedPly]);
+
+  useEffect(() => {
+    if (!selectedGameId) {
+      setCoaching(null);
+      setCoachingLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    setCoachingLoading(true);
+    void (async () => {
+      try {
+        const layered = await getCoachingLayers(selectedGameId, selectedPly ?? undefined);
+        if (cancelled) {
+          return;
+        }
+        setCoaching(layered);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        setStatus(error instanceof Error ? error.message : "Failed to generate coaching layers.");
+      } finally {
+        if (!cancelled) {
+          setCoachingLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedGameId, selectedPly]);
 
   const evalPercent = useMemo(() => clampEval(selectedMove?.eval_after ?? 0), [selectedMove]);
@@ -242,6 +279,7 @@ export default function App() {
               <MoveList moves={selectedGame?.moves ?? []} selectedPly={selectedPly} onSelect={(ply) => setSelectedPly(ply)} />
             </div>
             <ExplanationPanel move={selectedMove} />
+            <CoachingPanel coaching={coaching} loading={coachingLoading} />
           </div>
 
           <div className="qa-column">

@@ -1,4 +1,4 @@
-import type { AnalysisJob, GameDetail, GameSummary, MoveAnalysis, QuestionAnswer } from "../types";
+import type { AnalysisJob, CoachingLayers, GameDetail, GameSummary, MoveAnalysis, QuestionAnswer } from "../types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
@@ -66,4 +66,9 @@ export function askQuestion(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function getCoachingLayers(gameId: string, ply?: number): Promise<CoachingLayers> {
+  const query = ply != null ? `?ply=${ply}` : "";
+  return request<CoachingLayers>(`/games/${gameId}/coaching${query}`, { method: "POST" });
 }
