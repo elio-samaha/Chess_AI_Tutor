@@ -69,6 +69,6 @@ export function askQuestion(
 }
 
 export function getCoachingLayers(gameId: string, ply?: number): Promise<CoachingLayers> {
-  const query = ply ? `?ply=${ply}` : "";
+  const query = ply != null ? `?ply=${ply}` : "";
   return request<CoachingLayers>(`/games/${gameId}/coaching${query}`, { method: "POST" });
 }
