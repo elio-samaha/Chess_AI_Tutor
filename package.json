@@ -7,10 +7,12 @@
   ],
   "scripts": {
     "build": "npm run build:web",
-    "dev:api": "uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --app-dir services/api",
+    "dev:api": "python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --app-dir services/api",
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
-    "test:api": "pytest services/api/tests"
+    "test:api": "python -m pytest services/api/tests",
+    "test:web": "npm --workspace apps/web run test",
+    "preview:web": "npm --workspace apps/web run preview"
   },
   "engines": {
     "node": ">=20"
