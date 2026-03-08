@@ -18,6 +18,7 @@ data/
 *.db
 *.log
 *.pid
+.tools/
 
 # OS
 .DS_Store
