@@ -22,5 +22,13 @@
 
 See `README.md` for full setup. Key shortcuts:
 - **Tests:** `source services/api/.venv/bin/activate && STOCKFISH_PATH=/usr/games/stockfish pytest services/api/tests -v`
+- **Frontend tests:** `npm run test:web`
 - **Build frontend:** `npm run build:web`
 - **Dev servers:** start API and web in separate terminals (see table above)
+- **Lint (TypeScript):** `npx --workspace apps/web tsc --noEmit`
+
+### Gotchas
+
+- The backend does **not** auto-load `.env` files. Either pass `--env-file services/api/.env` to uvicorn or export `STOCKFISH_PATH` directly in the shell.
+- Deep analysis (`POST /analyses` with `mode: deep`) takes ~10 s per game because Stockfish evaluates every position at depth 20. Tests mock this, so they are fast.
+- `npm run dev:api` and `npm run test:api` from `package.json` assume the venv is already activated in the current shell.
